@@ -1,0 +1,37 @@
+
+{% if login == 0 %}
+<form method="post" autocomplete="off">
+	<P align = "right"><input type = "submit" name = "login" value = "Login"/>
+	<p>Put in Torn Name</p>
+	<p><input type = "text" name = "nm"/></p>
+
+	<p>Put in api key</p>
+	<p><input type = "text" name = "key"/></p>
+
+	<p>Put in Password</p>
+	<p><input type = "text" name = "pass2"/></p>
+	<p><input type = "submit" value = "submit"/></p>	
+
+<form>
+{% endif %}
+
+
+{% if invalidPost == 1 %}
+
+<p>No info given yet</p>
+
+{% endif %}
+
+{% if fail == 1 %}
+
+<p>Name, password, or apikey is not valid</p>
+
+{% endif %}
+
+
+{% if login == 1 %}
+<form method="post" autocomplete="off">
+<p>Already logged in.<p>
+<p><input type = "submit" value = "Signout"/></p>
+<form>
+{% endif %}

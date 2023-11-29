@@ -1,0 +1,42 @@
+
+
+
+
+
+
+{% if off == 0 %}
+<form method="post" autocomplete="off">
+	<p>You are not logged in or admin deleted page</p>
+	<p><input type = "submit" name = "login" value = "Login"/></p>
+<form>
+{% endif %}
+
+{% if off == 1 %}
+<form method="post" autocomplete="off">
+	
+	<h2>{{pageHeader}}</h2>
+
+	<P align = "right"><input type = "submit" name = "home" value = "Home Page"/>
+	<input type = "submit" name = "finance" value = "Finance Page"/>
+	<input type = "submit" name = "signout" value = "Sign out"/><p>
+
+	{% for x in goalsInfo %}
+		{% if x != "" %}
+			<p>{{x}}<br>
+		{% else %}
+			<br>
+		{% endif %}
+	{% endfor %}
+
+
+	{% if permission == 2 %}
+		<p> Insert goal title here.<p>
+		<p><input type = "text" name = "headerEdit"/></p>
+		<p> Insert goals here. <p>
+		<p><input type = "text" name = "edit"/></p>
+		<p><input type = "submit" value = "submit"/></p>
+	{% endif %}
+	<p>Most recent editor - {{last_editor}}<p>
+<form>
+{% endif %}
+

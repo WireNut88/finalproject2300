@@ -1,0 +1,309 @@
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+import requests
+from flask_sqlalchemy import SQLAlchemy
+import sqlite3
+import time
+import os
+#import winsound
+import cgi
+app = Flask(__name__)
+
+#app.config['SERVER_NAME'] = 'flask.dev.ok'
+app.secret_key = "TornadoPlace132"
+
+listm = requests.get("https://api.torn.com/user/?selections=stocks&key=uS9EJeFjKIvNI7L8")
+data = listm.json()            # translates that response into a dict variable
+
+listm2 = requests.get("https://api.torn.com/torn/?selections=stocks&key=uS9EJeFjKIvNI7L8")
+data2 = listm2.json()            # translates that response into a dict variable
+players = ["Brayden407", "Ubernator","Sunday","PsYElmo","TheCyberpunk","Chelsy_Talmor","LeSoul","madmolly","OnesTwosThrees","Shib71","Winchman","Wonderrwoman","S33D","RavenDeRopa"]
+api = {"Brayden407" : "6pyYLMToJhpsBlW9","Random": "0"}
+
+
+BASE_DIR = os.path.dirname(os.path.abspath(""))
+db_path = os.path.join(BASE_DIR, "users.sqlite3")
+
+db_path = os.path.join(os.path.dirname(""), 'users.sqlite3')
+db_uri = 'sqlite:///{}'.format(db_path)
+app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///var/www/webApp/instance/users.sqlite3'
+app.config["SQLALCHEMY_TRACK_NOTIFICATION"] = False
+
+
+
+db = SQLAlchemy(app)
+class users(db.Model):
+    _id = db.Column("id", db.Integer, primary_key = True)
+    name = db.Column(db.String(100))
+    key = db.Column(db.String(100))
+    password = db.Column(db.String(100))
+    
+    def __init__(self, name,key,password):
+        self.name = name
+        self.key = key
+        self.password = password
+
+
+@app.after_request
+def set_headers(response):
+    response.headers["Referrer-Policy"] = 'no-referrer'
+    return response
+
+@app.route('/', methods= ["POST","GET"])
+def hello():
+    sortMethod = "none"
+    if request.method == "POST":
+        if 'nm2' in request.form:
+            userList = users.query.all()
+            userName = request.form['nm2']
+            password = request.form['pass']
+        else:
+            #print("worked")
+            userList = users.query.all()
+            userName = userList[0].name
+            password = userList[0].password
+            sortMethod = request.form['sort']
+        foundUser = users.query.filter_by(name = userName).first()
+        if foundUser:
+            if foundUser.name == userName and foundUser.password == password:
+                stockName = []
+                stockAmount = []
+                stockFullName = []
+                count = 0
+                listm2 = requests.get("https://api.torn.com/torn/?selections=stocks&key={}".format(userList[0].key))
+                data2 = listm2.json()
+                happen = 0
+                #print(data2) 
+                templist2 = []
+                templist3 = []
+                for m in userList:
+                    temptest = requests.get("https://api.torn.com/user/?selections=stocks&key={}".format(m.key))
+                    data5 = temptest.json()
+                    if 'error' not in data5:
+                        templist = []
+                        listm3 = requests.get("https://api.torn.com/user/?selections=stocks&key={}".format(m.key))
+                        data3 = listm3.json()
+                        #if m.name == "PsYElmo" or m.name == "Brayden407":
+                            #print(m.name)
+                            #print(m.key)
+                            #print(data3)
+                        listm4 = requests.get("https://api.torn.com/user/?selections=properties&key={}".format(m.key))
+                        data4 = listm4.json()
+                        listm5 = requests.get("https://api.torn.com/user/?selections=icons&key={}".format(m.key))
+                        data5 = listm5.json()
+                        count = 0
+                        #print(data4)
+                        if 'properties' in data4:
+                            #print("got here")
+                            for x in data4['properties']:
+                                #print(x)
+                                if data4['properties'][x]['property'] == "Private Island" and data4['properties'][x]['status'] == "Owned by them":
+                                    count += 1
+                        templist2.append(count)
+                        print(data5)
+                        if 'icons' in data5:
+                            print("made it here")
+                            found = 0
+                            for x in data5['icons']:
+                                #print(data5['icons'][x])
+                                if x == "icon29":
+                                    #print("got the man")
+                                    #print(data5)
+                                    for y in range(len(data5['icons'][x])):
+                                        print(data5['icons'][x][y:+3])
+                                        if data5['icons'][x][y:(y+3)] == "day":
+                                            found = 1
+                                            #print(data5['icons'][x][y-4])
+                                            if data5['icons'][x][y-4] == " ":
+                                                templist3.append(data5['icons'][x][(y-3):(y-1)])
+                                                s= data5['icons'][x][(y-3):(y-1)]
+                                            elif data5['icons'][x][y-4] == "-": 
+                                                templist3.append(data5['icons'][x][(y-2):(y-1)])
+                                                s = data5['icons'][x][(y-2):(y-1)]
+                                            else:
+                                                templist3.append(data5['icons'][x][(y-4):(y-1)])
+                                                s = data5['icons'][x][(y-4):(y-1)]
+                            if found == 0:
+                                templist3.append("0")
+                                s = "0"
+                        else:
+                            templist3.append("0")
+                            s = "0"
+                        #print(templist3)
+                        #print(len(data2['stocks']), "this is stock amount")
+                        for x in range(1,len(data2['stocks'])+1):
+                            if 'stocks' in data3:
+                                if happen != 1:
+                                    stockFullName.append(data2['stocks'][str(x)]['name'])
+                                    stockName.append(data2['stocks'][str(x)]['acronym'])
+                                if str(x) in data3['stocks'].keys():
+                                    #print(data3['stocks'][str(x)])
+                                    if 'dividend' in data3['stocks'][str(x)].keys():
+                                        #m.stockAmount = m.stockAmount + str(data3['stocks'][str(x)]['dividend']['increment'])
+                                        templist.append(str(data3['stocks'][str(x)]['dividend']['increment']))
+                                    elif 'benefit' in data3['stocks'][str(x)].keys():
+                                        #m.stockAmount = m.stockAmount + str(data3['stocks'][str(x)]['benefit']['increment'])
+                                        templist.append(str(data3['stocks'][str(x)]['benefit']['increment']))
+                                    else:
+                                        #m.stockAmount = m.stockAmount + "0"
+                                        templist.append("0")
+                                else:
+                                    #m.stockAmount = m.stockAmount + "0"
+                                    templist.append("0")
+                            else:
+                                templist.append("0")
+                        happen = 1
+                        stockAmount.append(templist)
+                        #<th span {{stockFullName[count]}} >{{y}}</th>
+                #print(stockFullName)
+                #print(stockFullName[1])
+                #trying out new table
+                for x in range(len(templist2)):
+                    stockAmount[x].append(templist2[x])
+                    stockAmount[x].append(templist3[x])
+                stockName.append("PI'S")
+                stockName.append("Bank")
+                stockFullName.append("Private Island")
+                stockFullName.append("Bank")
+                if sortMethod in stockName:
+                    #print("made it in sorting")
+                    index = stockName.index(sortMethod)
+                    for x in range(len(userList)):
+                        minAmount = int(stockAmount[x][index])
+                        for y in range(len(userList)):
+                            if int(stockAmount[y][index]) >= minAmount:
+                                minAmount = int(stockAmount[y][index])
+                                tempUser = userList[x]
+                                tempStock = stockAmount[x]
+                                stockAmount[x] = stockAmount[y]
+                                userList[x] = userList[y]
+                                stockAmount[y] = tempStock
+                                userList[y] = tempUser
+                
+                return render_template("index.html", players = userList, stockName = stockName, stockAmount = stockAmount, count = count, off = 1, stockFullName = stockFullName)
+        else: 
+            return render_template("index.html",off = 0)
+    return render_template("index.html",off = 0)
+
+
+    
+@app.route("/login",methods= ["POST","GET"])
+def login():
+    invalidPost = 0
+    nameFail = 0
+    name = 0
+    if request.method == "POST":
+        apiKey = request.form["key"]
+        user = request.form["nm"]
+        password2 = request.form["pass2"]
+        found = users.query.filter_by(name = user).first()
+        testlist = requests.get("https://api.torn.com/user/?selections=&key={}".format(apiKey))
+        testdata = testlist.json()
+        if found:
+            if 'name' in testdata and found.name == testdata['name']:
+                found.key = apiKey
+                found.password = password2
+                db.session.commit()
+                return redirect("/")
+            else:
+                apiFail = 1
+                return render_template("login.html", apiFail = apiFail)
+        elif str(user) in players:
+            if 'name' in testdata and user == testdata['name']:
+                #print(apiKey)
+                newUser = users(user,apiKey,password2)
+                db.session.add(newUser)
+                db.session.commit()
+                return redirect("/")
+                #print("made a new one")
+            else:
+                apiFail = 1
+                return render_template("login.html", apiFail = apiFail)
+        else:
+            name = 1
+            return render_template("login.html", name = name)
+        #flash("You did it")
+    else: 
+        invalidPost = 1
+        return render_template("login.html", invalidPost = invalidPost)
+    return render_template("login.html")
+
+@app.route('/logintrue', methods= ["POST","GET"])
+def logintrue():
+    sortMethod = "none"
+    if request.method == "POST":
+        if 'nm2' in request.form:
+            userList = users.query.all()
+            userName = request.form['nm2']
+            password = request.form['pass']
+            if foundUser.name == userName and foundUser.password == password:
+                session["user"] = userName
+                session["password"] = password
+        else:
+            #print("worked")
+            userList = users.query.all()
+            userName = userList[0].name
+            password = userList[0].password
+            sortMethod = request.form['sort']
+        foundUser = users.query.filter_by(name = userName).first()
+        if foundUser:
+            if foundUser.name == userName and foundUser.password == password:
+                print("found user")
+                return render_template("logintrue.html",off = 1)
+        else:
+            print("no user found")
+            return render_template("logintrue.html",off = 0)
+    return render_template("logintrue.html",off = 0)
+
+
+
+
+
+
+
+
+
+
+@app.route("/chainlogin",methods= ["POST","GET"])
+def chainlogin():
+    if request.method == "POST":
+        user = request.form["nm"]
+        passw = request.form["pass2"]
+        found = users.query.filter_by(name = user).first()
+        if found:
+            if found.password == passw:
+                session["apikey"] = found.key
+                return redirect("/chaint")
+        else:
+            return render_template("chainlogin.html")
+        
+    return render_template("chainlogin.html")
+@app.route("/chaint",methods= ["POST","GET"])
+def chaint():
+    if "apikey" in session:
+        apiKey = session["apikey"]
+        chainList = requests.get("https://api.torn.com/faction/?selections=chain&key={}".format(apiKey))
+        chainData = chainList.json()
+        timeLeft = chainData['chain']['timeout']
+        if int(chainData['chain']['timeout']) <= 120:
+            #frequency = 2500  # Set Frequency To 2500 Hertz
+            #duration = 1000  # Set Duration To 1000 ms == 1 second
+            #winsound.Beep(frequency, duration)
+            wait = 3
+        if int(chainData['chain']['timeout']) <= 60:
+            #frequency = 2500  # Set Frequency To 2500 Hertz
+            #duration = 1000  # Set Duration To 1000 ms == 1 second
+            #winsound.Beep(frequency, duration)
+            wait = 0.5
+            count += 1
+            time.sleep(wait)
+        return render_template("chain.html", count = chainData['chain']['timeout'])
+        print("yo")
+    else:
+        return redirect("/chainlogin")
+print("here")
+if __name__=='__main__':
+    db.create_all()
+    print("milk")
+    app.run()

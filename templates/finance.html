@@ -1,0 +1,44 @@
+
+
+
+
+
+
+{% if off == 0 %}
+<form method="post" autocomplete="off">
+	<p>You are not logged in or admin has hidden page.</p>
+	<p><input type = "submit" name = "login" value = "Login"/></p>
+<form>
+{% endif %}
+
+{% if off == 1 %}
+<form method="post" autocomplete="off">
+	
+	<h2>{{pageHeader}}</h2>
+
+	<P align = "right"><input type = "submit" name = "home" value = "Home Page"/>
+	<input type = "submit" name = "goal" value = "Goal Page"/>
+	<input type = "submit" name = "signout" value = "Sign out"/><p>
+
+
+	{% if permission == 2 %}
+		<p> Insert Title Here.<p>
+		<p><input type = "text" name = "headerEdit"/></p>
+	{% endif %}
+
+	{% for y in allUsers %}
+		{% set count = loop.index - 1 %}
+		<p> {{y}} current donation is {{userDonations[count]}} million.<p>
+		<p> Update {{y}} donation here.<p>
+		<p><input type = "text" name = "d{{y}}"/></p>
+	{% endfor %}
+
+	<p><input type = "submit" value = "submit"/></p>
+	
+	<p> {{max_name}} has donated the most with {{max_value}} million dollars.<p>
+	<p> {{min_name}} has donated the least with {{min_value}} million dollars.<p>
+	<p> The group had donated a grand total of {{sum_value}} million dollars.<p>
+	<p>Most recent editor - {{editor}}<p>
+<form>
+{% endif %}
+

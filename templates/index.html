@@ -1,0 +1,102 @@
+<html>
+<style>
+table, th, td {
+  border:1px solid red;
+  border-collapse: collapse;
+}
+th, td {
+  background-color: white;
+}
+td:nth-child(odd) {
+  border:1px solid blue;
+}
+th:nth-child(odd) {
+  border:1px solid blue;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: white;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+
+  /* Position the tooltip */
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -60px;
+  z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+</style>
+<body>
+
+
+
+
+<h2>Tornado's Independent</h2>
+
+{% if off == 0 %}
+<form method="post" autocomplete="off">
+	<p>You are not logged in</p>
+	<p><input type = "submit" name = "loginB" value = "Login"/></p>
+	<p><input type = "submit" name = "signupB" value = "Sign up"/></p>
+<form>
+{% endif %}
+
+{% if off == 1 %}
+<form method="post" autocomplete="off">
+        <P align = "right"><input type = "submit" name = "goal" value = "Goal Page"/>
+	<input type = "submit" name = "finance" value = "Finance Page"/>
+	{% if permission >= 3 %}
+		<input type = "submit" name = "admin" value = "Admin Page"/>
+	{% endif %}
+	<input type = "submit" name = "signout" value = "Sign out"/><p>
+	<p>Which stock, bank, or pi to sort. (type as seen in table)</p>
+	<p><input type = "text" name = "sort"/></p>
+	<p><input type = "submit" value = "submit"/></p>
+<form>
+
+
+
+
+<table style="width:100%">
+	<tr>
+		<th>Stocks</th>
+		{% for y in stockName %}
+			{% set count = loop.index - 1 %}
+			<th><div class="tooltip">{{y}}
+  				<span class="tooltiptext">{{stockFullName[count]}}</span>
+			</div></th>
+			
+		{% endfor %}
+	</tr>
+	<tr>
+		{% for x in players %}
+			<th>{{x.name}}</th>
+			{% set count = loop.index - 1 %}
+			{% for b in stockAmount[count] %}
+				<td style="text-align:center"> {{b}}</td>
+			{% endfor %}
+			</tr>
+  			<tr>
+		{% endfor %}
+  	</tr>
+  	<tr>
+    		
+	</tr>
+</table>
+{% endif %}
+
+</body>
+</html>
